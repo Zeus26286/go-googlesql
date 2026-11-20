@@ -591,7 +591,7 @@ func (m *Module) invoke(serviceID, methodID int32, req []byte, call func(*base.M
 		if reqPtr != 0 {
 			defer wasm2go.WasmFree(m.g, reqPtr)
 		}
-		copy(wasm2go.Memory(m.g)[reqPtr:], req)
+		copy(wasm2go.Memory(m.g)[uint32(reqPtr):], req)
 	}
 	packed, err := call(m.g, reqPtr, reqLen)
 	if err != nil {
@@ -616,7 +616,7 @@ func (m *Module) resolveTypeName(ptr uint64) (string, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	reqPtr := wasm2go.WasmAlloc(m.g, int32(len(buf)))
-	copy(wasm2go.Memory(m.g)[reqPtr:], buf)
+	copy(wasm2go.Memory(m.g)[uint32(reqPtr):], buf)
 	packed := wasm2go.WasmifyGetTypeName(m.g, reqPtr, int32(len(buf)))
 	respPtr := uint32(packed >> 32)
 	respLen := uint32(packed & 0xFFFFFFFF)
@@ -696,7 +696,7 @@ func (m *Module) handleCallback(callbackID, methodID, reqPtr, reqLen int32) int6
 	var req []byte
 	if reqLen > 0 {
 		buf := make([]byte, reqLen)
-		copy(buf, mem[reqPtr:reqPtr+reqLen])
+		copy(buf, mem[uint32(reqPtr):uint32(reqPtr)+uint32(reqLen)])
 		req = buf
 	}
 	// Release m.mu around the user handler so that nested calls
@@ -718,7 +718,7 @@ func (m *Module) handleCallback(callbackID, methodID, reqPtr, reqLen int32) int6
 		return 0
 	}
 	ptr := wasm2go.WasmAlloc(m.g, int32(len(resp)))
-	copy(wasm2go.Memory(m.g)[ptr:], resp)
+	copy(wasm2go.Memory(m.g)[uint32(ptr):], resp)
 	return int64(ptr)<<32 | int64(len(resp))
 }
 

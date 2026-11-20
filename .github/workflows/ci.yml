@@ -14,8 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Verify bridge file (release attestation)
-        run: make verify
+      - name: Verify bridge file (release attestation, local patches reverted)
+        run: make verify-patched
 
   test:
     name: Go test

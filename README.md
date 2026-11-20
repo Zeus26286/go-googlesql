@@ -180,6 +180,24 @@ Both checks run unauthenticated — no `gh auth login`, no `GH_TOKEN` /
 CI runs the same target on every push to `main` and every pull
 request before running the test suite.
 
+### Local patches in this fork
+
+This fork carries changes to the generated `googlesql.go`, kept as
+files under `patches/`:
+
+- `uint32-wasm-pointers.patch`: slice the wasm memory with `uint32`
+  addresses. wasm2go returns wasm32 addresses as `int32`, so past
+  2 GiB of wasm heap they were negative and slicing panicked with
+  `slice bounds out of range [-2147...:]`. Covered by
+  `TestWasmPointersAbove2GiB`, which needs several GiB of RAM and only
+  runs with `GOOGLESQL_LARGE_MEMORY_TEST=1`.
+
+Because `googlesql.go` no longer matches the upstream release byte for
+byte, CI runs `make verify-patched`: it reverts the patches on a copy
+and verifies that copy's attestation. `make googlesql` re-applies the
+patches after downloading a new release and fails if one no longer
+applies.
+
 ## Resource footprint
 
 Because GoogleSQL ships as ahead-of-time transpiled Go (under
